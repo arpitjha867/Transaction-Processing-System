@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Processing System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-panel {
+            grid-column: 1 / -1;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .status-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-card.success {
+            border-left-color: #28a745;
+        }
+
+        .status-card.error {
+            border-left-color: #dc3545;
+        }
+
+        .status-card.warning {
+            border-left-color: #ffc107;
+        }
+
+        .db-state {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .db-variable {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .db-variable .var-name {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .db-variable .var-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 3px solid transparent;
+            border-radius: 3px;
+        }
+
+        .log-entry.success {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .log-entry.error {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .log-entry.info {
+            border-left-color: #2196f3;
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        .log-entry .timestamp {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .recovery-log {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .recovery-log h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Transaction Processing System</h1>
+            <p>Design, Implementation & Simulation of ACID-Compliant Database Transactions</p>
+        </div>
+
+        <div class="content">
+            <!-- Input Panel -->
+            <div class="panel">
+                <h2>📝 Transaction Input</h2>
+
+                <div class="input-group">
+                    <label>Enter Transactions</label>
+                    <textarea id="transactionText" placeholder="T1: READ A
+T1: WRITE A = A+50
+T2: READ B
+T2: WRITE B = B-30
+T1: COMMIT
+T2: COMMIT"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Initial Database State</label>
+                    <input type="text" id="dbState" value="A=100,B=200,C=300" placeholder="A=100,B=200,C=300">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="loadTransactions()">Load & Validate</button>
+                    <button class="btn-secondary" onclick="resetSystem()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="panel">
+                <h2>⚙️ Execution Control</h2>
+                
+                <div class="button-group">
+                    <button class="btn-success" onclick="executeAll()" id="executeBtn" disabled>Execute All</button>
+                    <button class="btn-primary" onclick="executeStep()" id="stepBtn" disabled>Step Execute</button>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-card" id="serializableCard">
+                        <h3>Serializability</h3>
+                        <div class="value" id="serializableStatus">-</div>
+                    </div>
+                    <div class="status-card" id="recoverableCard">
+                        <h3>Recoverability</h3>
+                        <div class="value" id="recoverableStatus">-</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>Transactions</h3>
+                        <div class="value" id="transactionCount">0</div>
+                    </div>
+                    <div class="status-card">
+                        <h3>Execution Status</h3>
+                        <div class="value" id="execStatus">Ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database State Panel -->
+            <div class="panel status-panel">
+                <h2>💾 Current Database State</h2>
+                <div class="db-state" id="dbStateDisplay">
+                    <div class="db-variable">
+                        <div class="var-name">Waiting...</div>
+                        <div class="var-value">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Execution Log Panel -->
+            <div class="panel status-panel">
+                <h2>📋 Execution Log</h2>
+                <div class="log-container" id="executionLog">
+                    <div class="log-entry info">System ready. Load transactions to begin.</div>
+                </div>
+            </div>
+
+            <!-- Recovery Log Panel -->
+            <div class="panel status-panel" id="recoveryPanel">
+                <h2>🔧 Recovery Logs</h2>
+                <div class="recovery-log">
+                    <h3>UNDO Log (Before Images for Rollback)</h3>
+                    <div class="log-container" id="undoLog">
+                        <div class="log-entry info">No operations yet...</div>
+                    </div>
+                </div>
+                <div class="recovery-log" style="margin-top: 10px;">
+                    <h3>REDO Log (After Images for Durability)</h3>
+                    <div class="log-container" id="redoLog">
+                        <div class="log-entry info">No commits yet...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let transactionsLoaded = false;
+        let stepMode = false;
+
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('executionLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateDBState(state) {
+            const display = document.getElementById('dbStateDisplay');
+            display.innerHTML = '';
+            
+            for (const [variable, value] of Object.entries(state)) {
+                const varDiv = document.createElement('div');
+                varDiv.className = 'db-variable';
+                varDiv.innerHTML = `
+                    <div class="var-name">${variable}</div>
+                    <div class="var-value">${value}</div>
+                `;
+                display.appendChild(varDiv);
+            }
+        }
+
+        async function loadTransactions() {
+            const textInput = document.getElementById('transactionText');
+            const dbState = document.getElementById('dbState').value;
+            
+            if (!textInput.value.trim()) {
+                addLog('Error: Please enter transactions', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('transaction_text', textInput.value);
+            formData.append('db_state', dbState);
+            
+            addLog('Loading and validating transactions...', 'info');
+            document.getElementById('execStatus').textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    addLog(`Error: ${data.error}`, 'error');
+                    document.getElementById('execStatus').textContent = 'Error';
+                    return;
+                }
+                
+                // Update status
+                const serialCard = document.getElementById('serializableCard');
+                const recoverCard = document.getElementById('recoverableCard');
+                
+                if (data.is_serializable) {
+                    document.getElementById('serializableStatus').textContent = '✓ Yes';
+                    serialCard.classList.add('success');
+                    addLog(`✓ Schedule is serializable. Order: ${data.serial_order.join(' → ')}`, 'success');
+                } else {
+                    document.getElementById('serializableStatus').textContent = '✗ No';
+                    serialCard.classList.add('error');
+                    addLog('✗ Schedule is NOT serializable!', 'error');
+                }
+                
+                if (data.is_recoverable) {
+                    document.getElementById('recoverableStatus').textContent = '✓ Yes';
+                    recoverCard.classList.add('success');
+                    addLog(`✓ Schedule is recoverable. ${data.recovery_info}`, 'success');
+                } else {
+                    document.getElementById('recoverableStatus').textContent = '✗ No';
+                    recoverCard.classList.add('error');
+                    addLog(`✗ Schedule is NOT recoverable! ${data.recovery_info}`, 'error');
+                }
+                
+                document.getElementById('transactionCount').textContent = Object.keys(data.transactions).length;
+                document.getElementById('execStatus').textContent = 'Ready';
+                
+                updateDBState(data.initial_db_state);
+                addLog('Transactions loaded successfully!', 'success');
+                
+                // Enable execution buttons
+                document.getElementById('executeBtn').disabled = false;
+                document.getElementById('stepBtn').disabled = false;
+                transactionsLoaded = true;
+                
+            } catch (error) {
+                addLog(`Error: ${error.message}`, 'error');
+                document.getElementById('execStatus').textContent = 'Error';
+            }
+        }
+
+        async function executeAll() {
+            if (!transactionsLoaded) return;
+            
+            document.getElementById('execStatus').textContent = 'Executing...';
+            addLog('Starting full execution...', 'info');
+            
+            try {
+                const response = await fetch('/execute', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.execution_log) {
+                    data.execution_log.forEach(log => {
+                        const type = log.status === 'SUCCESS' ? 'success' : 'error';
+                        addLog(log.message, type);
+                        
+                        if (log.status === 'SUCCESS' && log.operation.type === 'WRITE') {
+                            // Show intermediate state
+                            setTimeout(() => updateDBState(data.final_db_state), 100);
+                        }
+                    });
+                }
+                
+                // Always show recovery logs
+                showRecoveryLogs(data.undo_log || [], data.redo_log || []);
+                
+                if (data.success) {
+                    updateDBState(data.final_db_state);
+                    addLog('✓ All transactions executed successfully!', 'success');
+                    document.getElementById('execStatus').textContent = 'Completed';
+                } else {
+                    addLog(`⚠ Execution failed: ${data.error}`, 'error');
+                    addLog('Recovery process initiated...', 'info');
+                    document.getElementById('execStatus').textContent = 'Recovery';
+                }
+                
+            } catch (error) {
+                addLog(`Error during execution: ${error.message}`, 'error');
+                document.getElementById('execStatus').textContent = 'Error';
+            }
+        }
+
+        async function executeStep() {
+            if (!transactionsLoaded) return;
+            
+            document.getElementById('execStatus').textContent = 'Step Mode';
+            
+            try {
+                const response = await fetch('/step', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.completed) {
+                    addLog('✓ All operations completed!', 'success');
+                    document.getElementById('execStatus').textContent = 'Completed';
+                    document.getElementById('stepBtn').disabled = true;
+                    updateDBState(data.final_db_state);
+                    return;
+                }
+                
+                if (data.step) {
+                    const type = data.step.status === 'SUCCESS' ? 'success' : 'error';
+                    addLog(data.step.message, type);
+                    updateDBState(data.current_db_state);
+                }
+                
+                // Always update recovery logs after each step
+                if (data.undo_log !== undefined && data.redo_log !== undefined) {
+                    showRecoveryLogs(data.undo_log, data.redo_log);
+                }
+                
+                if (data.recovery_triggered) {
+                    addLog('⚠ Recovery triggered due to error', 'error');
+                    document.getElementById('execStatus').textContent = 'Recovery';
+                }
+                
+            } catch (error) {
+                addLog(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showRecoveryLogs(undoLog, redoLog) {
+            const undoDiv = document.getElementById('undoLog');
+            const redoDiv = document.getElementById('redoLog');
+            
+            // Format UNDO log
+            if (undoLog && undoLog.length > 0) {
+                undoDiv.innerHTML = '';
+                undoLog.forEach((entry, idx) => {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry info';
+                    logEntry.innerHTML = `
+                        <strong>[${idx + 1}]</strong> ${entry.transaction}: 
+                        ${entry.variable} = ${entry.old_value} 
+                        <span style="color: #888;">(before image)</span>
+                    `;
+                    undoDiv.appendChild(logEntry);
+                });
+            } else {
+                undoDiv.innerHTML = '<div class="log-entry info">No UNDO operations yet...</div>';
+            }
+            
+            // Format REDO log
+            if (redoLog && redoLog.length > 0) {
+                redoDiv.innerHTML = '';
+                redoLog.forEach((entry, idx) => {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry success';
+                    logEntry.innerHTML = `
+                        <strong>[${idx + 1}]</strong> ${entry.transaction}: 
+                        ${entry.variable} = ${entry.new_value} 
+                        <span style="color: #888;">(after image)</span>
+                    `;
+                    redoDiv.appendChild(logEntry);
+                });
+            } else {
+                redoDiv.innerHTML = '<div class="log-entry info">No commits yet...</div>';
+            }
+        }
+
+        async function resetSystem() {
+            await fetch('/reset', { method: 'POST' });
+            
+            document.getElementById('executionLog').innerHTML = 
+                '<div class="log-entry info">System reset. Load transactions to begin.</div>';
+            document.getElementById('serializableStatus').textContent = '-';
+            document.getElementById('recoverableStatus').textContent = '-';
+            document.getElementById('transactionCount').textContent = '0';
+            document.getElementById('execStatus').textContent = 'Ready';
+            document.getElementById('executeBtn').disabled = true;
+            document.getElementById('stepBtn').disabled = true;
+            
+            document.getElementById('serializableCard').classList.remove('success', 'error');
+            document.getElementById('recoverableCard').classList.remove('success', 'error');
+            
+            // Clear recovery logs
+            document.getElementById('undoLog').innerHTML = '<div class="log-entry info">No operations yet...</div>';
+            document.getElementById('redoLog').innerHTML = '<div class="log-entry info">No commits yet...</div>';
+            
+            updateDBState({ 'Waiting': '-' });
+            transactionsLoaded = false;
+        }
+    </script>
+</body>
+</html>
